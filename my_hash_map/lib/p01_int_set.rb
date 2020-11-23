@@ -43,8 +43,10 @@ class IntSet
   end
 
   def insert(num)
-    i = num % num_buckets 
-    @store[i] << num
+    if !include?(num)
+      i = num % num_buckets 
+      @store[i] << num
+    end 
   end
 
   def remove(num)
@@ -76,18 +78,27 @@ class ResizingIntSet
   def initialize(num_buckets = 20)
     @store = Array.new(num_buckets) { Array.new }
     @count = 0
-    #resize!
+    # resize!
   end
 
-  def insert(num) 
+  def insert(num)
+   
     
-    @count += 1
-    resize!
-    i = num % num_buckets
-    @store[i] << num
+    if !self.include?(num)
+      i = num % num_buckets
+      @store[i] << num
+      @count += 1 
+      resize! if @count > num_buckets
+    end 
+     
   end
 
   def remove(num)
+    i = num % num_buckets
+    if self.include?(num)
+      @store[i].delete(num)
+      @count -= 1
+    end
   end
 
   def include?(num)
@@ -104,17 +115,15 @@ class ResizingIntSet
   def num_buckets
     @store.length
   end
-  
-  def count 
-    @count 
-  end
 
-  def num_buckets=(value)
-    @store.length = value 
-  end
-  #debugger
+
   def resize!
-    #debugger
-    num_buckets += 1 if @count > num_buckets
-  end
+    new_buckets = num_buckets * 2
+    before = @store
+    @store = Array.new(new_buckets) {Array.new}
+    before.flatten.each do |num|
+      self.insert(num)
+      @count -= 1
+    end 
+  end 
 end
